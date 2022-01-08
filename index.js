@@ -21,6 +21,7 @@ async function run() {
     await client.connect();
     const database = client.db("electronics_shop");
     const serviceCollection = database.collection("service");
+    const usersCollection = database.collection("users");
 
     //GET PRODUCT THE API
     app.get("/service", async (req, res) => {
@@ -35,6 +36,32 @@ async function run() {
       const query = { _id: ObjectId(id) };
       const service = await serviceCollection.findOne(query);
       res.json(service);
+    });
+
+    //Create A Order Api
+    app.post("/order", async (req, res) => {
+      const data = req.body;
+      const result = await orderCollection.insertOne(data);
+      res.send(result);
+    });
+
+    //Create A User Api
+    app.post("/users", async (req, res) => {
+      const user = req.body;
+      const result = await usersCollection.insertOne(user);
+      res.send(result);
+    });
+
+    //Get A user api
+    app.get("/users/:email", async (req, res) => {
+      const email = req.params.email;
+      const query = { email: email };
+      const user = await usersCollection.findOne(query);
+      let isAdmin = false;
+      if (user?.role === "admin") {
+        isAdmin = true;
+      }
+      res.send({ admin: isAdmin });
     });
   } finally {
     // Ensures that the client will close when you finish/error
