@@ -21,7 +21,9 @@ async function run() {
     await client.connect();
     const database = client.db("electronics_shop");
     const serviceCollection = database.collection("service");
+    const orderCollection = database.collection("order");
     const usersCollection = database.collection("users");
+    const reviewCollection = database.collection("review");
 
     //GET PRODUCT THE API
     app.get("/service", async (req, res) => {
@@ -52,6 +54,25 @@ async function run() {
       res.send(result);
     });
 
+    //My Order Get Api With Email
+    app.get("/myOrder/:email", async (req, res) => {
+      const result = await orderCollection
+        .find({
+          email: req.params.email,
+        })
+        .toArray();
+      res.send(result);
+    });
+
+    //Delete The Order Api
+    app.delete("/deleteOrder/:id", async (req, res) => {
+      // console.log(req.params.id);
+      const result = await orderCollection.deleteOne({
+        _id: ObjectId(req.params.id),
+      });
+      res.send(result);
+    });
+
     //Get A user api
     app.get("/users/:email", async (req, res) => {
       const email = req.params.email;
@@ -62,6 +83,20 @@ async function run() {
         isAdmin = true;
       }
       res.send({ admin: isAdmin });
+    });
+
+    //POST REVIEW API
+    app.post("/review", async (req, res) => {
+      const review = req.body;
+      const result = await reviewCollection.insertOne(review);
+      res.send(result);
+    });
+
+    //GET REVIEW API
+    app.get("/review", async (req, res) => {
+      const result = await reviewCollection.find({}).toArray();
+      res.send(result);
+      // console.log(result);
     });
   } finally {
     // Ensures that the client will close when you finish/error
